@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration System</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #0066ff, #7200ff);
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+h1 {
+    text-align: center;
+    color: #0055cc;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+input {
+    padding: 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #0066ff;
+}
+
+button {
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #0066ff;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0044aa;
+}
+
+.clear {
+    background: #555;
+}
+
+.clear:hover {
+    background: #333;
+}
+
+.message {
+    text-align: center;
+    margin: 20px;
+    font-weight: bold;
+}
+
+h2 {
+    margin: 25px 0 15px;
+    color: #222;
+}
+
+.student {
+    background: #f1f6ff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border-left: 5px solid #0066ff;
+}
+
+.delete {
+    float: right;
+    background: #e60000;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.delete:hover {
+    background: #990000;
+}
+
+@media(max-width: 600px) {
+    form {
+        grid-template-columns: 1fr;
+    }
+
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎓 STUDENT REGISTRATION</h1>
+
+    <p class="subtitle">
+        Student Registration Management System
+    </p>
+
+    <form id="studentForm">
+
+        <input
+            type="text"
+            id="firstName"
+            placeholder="First Name"
+            required
+        >
+
+        <input
+            type="text"
+            id="lastName"
+            placeholder="Last Name"
+            required
+        >
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Email Address"
+            required
+        >
+
+        <input
+            type="tel"
+            id="phone"
+            placeholder="Phone Number"
+            required
+        >
+
+        <button type="submit">
+            REGISTER STUDENT
+        </button>
+
+        <button type="reset" class="clear">
+            CLEAR FORM
+        </button>
+
+    </form>
+
+    <div class="message" id="message"></div>
+
+    <h2>📋 Registered Students</h2>
+
+    <div id="students"></div>
+
+</div>
+
+<script>
+
+// ==============================
+// DATABASE
+// ==============================
+
+let students = JSON.parse(
+    localStorage.getItem("students")
+) || [];
+
+
+// ==============================
+// REGISTER STUDENT
+// ==============================
+
+document.getElementById("studentForm")
+.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const firstName =
+        document.getElementById("firstName").value;
+
+    const lastName =
+        document.getElementById("lastName").value;
+
+    const email =
+        document.getElementById("email").value;
+
+    const phone =
+        document.getElementById("phone").value;
+
+
+    const student = {
+
+        id: Date.now(),
+
+        firstName: firstName,
+
+        lastName: lastName,
+
+        email: email,
+
+        phone: phone
+    };
+
+
+    students.push(student);
+
+
+    // Save to database
+    localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+    );
+
+
+    document.getElementById("message")
+        .innerHTML =
+        "✅ Student registered successfully!";
+
+    document.getElementById("message")
+        .style.color = "green";
+
+
+    document.getElementById("studentForm").reset();
+
+
+    displayStudents();
+
+});
+
+
+// ==============================
+// DISPLAY STUDENTS
+// ==============================
+
+function displayStudents() {
+
+    const studentsDiv =
+        document.getElementById("students");
+
+    studentsDiv.innerHTML = "";
+
+
+    if (students.length === 0) {
+
+        studentsDiv.innerHTML =
+            "<p>No students registered yet.</p>";
+
+        return;
+    }
+
+
+    students.forEach(function(student) {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "student";
+
+
+        div.innerHTML = `
+
+            <button
+                class="delete"
+                onclick="deleteStudent(${student.id})">
+                Delete
+            </button>
+
+            <strong>
+                ${student.firstName}
+                ${student.lastName}
+            </strong>
+
+            <br><br>
+
+            📧 Email:
+            ${student.email}
+
+            <br>
+
+            📱 Phone:
+            ${student.phone}
+
+        `;
+
+
+        studentsDiv.appendChild(div);
+
+    });
+}
+
+
+// ==============================
+// DELETE STUDENT
+// ==============================
+
+function deleteStudent(id) {
+
+    students =
+        students.filter(function(student) {
+
+            return student.id !== id;
+
+        });
+
+
+    localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+    );
+
+
+    displayStudents();
+
+}
+
+
+// ==============================
+// LOAD DATABASE
+// ==============================
+
+displayStudents();
+
+</script>
+
+</body>
+</html>
